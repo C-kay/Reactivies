@@ -1,4 +1,7 @@
+using API.Middleware;
 using Application.Activities;
+using Domain;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +11,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Persistence;
+using Microsoft.AspNetCore.Identity;
+using Application.Interfaces;
+using Infrastructure.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using AutoMapper;
 
 namespace API
 {
@@ -24,13 +36,22 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
+            services.AddControllers(opt =>{
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                opt.Filters.Add(new AuthorizeFilter(policy));
+            })
+                .AddFluentValidation(cfg =>{
+                    cfg.RegisterValidatorsFromAssemblyContaining<Create>();
+                });
+                
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+                c.CustomSchemaIds(x => x.FullName);
             });
 
             services.AddDbContext<DataContext>(option =>{
+                option.UseLazyLoadingProxies();
                 option.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
 
@@ -41,23 +62,57 @@ namespace API
             });
             
             services.AddMediatR(typeof(List.Handler).Assembly);
+
+            services.AddAutoMapper(typeof(List.Handler));
+
+            var builder = services.AddIdentityCore<AppUser>();
+            var IdentityBuilder= new IdentityBuilder(builder.UserType, builder.Services);
+            IdentityBuilder.AddEntityFrameworkStores<DataContext>();
+            IdentityBuilder.AddSignInManager<SignInManager<AppUser>>();
+
+            services.AddAuthorization(opt => {
+                opt.AddPolicy("IsActivityHost", policy =>{
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHander>();
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt =>{
+                    opt.TokenValidationParameters =new TokenValidationParameters{
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = key,
+                        ValidateAudience= false,
+                        ValidateIssuer= false
+                    };
+
+                });
+
+            services.AddScoped<IJwtGenerator, JwtGenerator>();
+            services.AddScoped<IUserAccessor, UserAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
             }
 
+            app.UseRouting();
             //app.UseHttpsRedirection();
             app.UseCors("CorsPolicy");
         
-            app.UseRouting();
-
+            
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

@@ -1,51 +1,35 @@
-import React, { SyntheticEvent } from 'react'
-import { Button, Item, Label, Segment } from 'semantic-ui-react'
-import { IActivity } from '../../../app/models/activity';
+import { observer } from 'mobx-react-lite';
+import React, { Fragment, useContext } from 'react';
+import { Item, Label} from 'semantic-ui-react';
+import { RootStoreContext } from '../../../app/stores/rootStore';
+import ActivityListItem from './ActivitiyListItem'
 
-interface IProps{
-    activities: IActivity[];
-    selectActivity: (id: string) =>void;
-    deleteActivity: (e: SyntheticEvent<HTMLButtonElement>, activity: IActivity) =>void;
-    submitting: boolean;
-    target: string
-}
 
-export const ActivityList : React.FC<IProps> = ({activities, selectActivity, deleteActivity, submitting, target}) => {
+const ActivityList : React.FC= () => {
+    const rootStore = useContext(RootStoreContext);
+    const {activitiesByDate} = rootStore.activityStore;
+
+    
     return (
-      <Segment clearing>
-        <Item.Group divided>
-          {activities.map((activity) => {
-            return (
-              <Item key={activity.id}>
-                <Item.Content>
-                  <Item.Header as="a">{activity.title}</Item.Header>
-                  <Item.Meta>{activity.date}</Item.Meta>
-                  <Item.Description>
-                    <div> {activity.description}</div>
-                    <div> {activity.venue}</div>
-                  </Item.Description>
-                  <Item.Extra>
-                    <Button
-                      onClick={() => selectActivity(activity.id)}
-                      floated="right"
-                      content="View"
-                      color="blue"
-                    />
-                    <Button
-                    name={activity.id}
-                    loading={target === activity.id && submitting}
-                      onClick={(e) => deleteActivity(e,activity)}
-                      floated="right"
-                      content="Remove"
-                      color="red"
-                    />
-                    <Label basic content={activity.category} />
-                  </Item.Extra>
-                </Item.Content>
-              </Item>
-            );
-          })}
-        </Item.Group>
-      </Segment>
+      <Fragment>
+        {activitiesByDate.map(([group, activities]) => (
+          <Fragment>
+            <Label key={group} size="large" color="blue">
+              {group}
+            </Label>
+
+            <Item.Group divided>
+              {activities.map((activity) => {
+                console.log(activity);
+                return <ActivityListItem activity={activity} />;
+              })}
+            </Item.Group>
+          </Fragment>
+        ))}
+      </Fragment>
     );
-}
+
+  
+};
+
+export default observer(ActivityList);

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Errors;
 using MediatR;
 using Persistence;
 
@@ -27,7 +28,9 @@ namespace Application.Activities
             {
                 var activity = await _context.Activities.FindAsync(request.Id); // when you update any thing in acitivity it changes in the db too
 
-                if(activity == null) throw new Exception("Could not find activity");
+                if(activity == null) throw new RestException(System.Net.HttpStatusCode.NotFound, new {
+                    activity="Not found"
+                });
 
                 _context.Remove(activity);
             

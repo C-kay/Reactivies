@@ -1,29 +1,51 @@
-import React from 'react'
-import { Button, Card, Image } from 'semantic-ui-react'
-import { IActivity } from '../../../../app/models/activity';
+import { observer } from "mobx-react-lite";
+import React, { useContext, useEffect } from "react";
+import { RouteComponentProps } from "react-router-dom";
+import { Grid } from "semantic-ui-react";
+import { LoadingComponent } from "../../../../app/layout/LoadingComponent";
+import { RootStoreContext } from "../../../../app/stores/rootStore";
+import ActivityDetailedChat from "./ActivityDetailedChat";
+import ActivityDetailedHeader from "./ActivityDetailedHeader";
+import ActivityDetailedInfo from "./ActivityDetailedInfo";
+import ActivityDetailedSidebar from "./ActivityDetailedSidebar";
 
-interface Iprops{
-    selectedActivity: IActivity;
-    setEditMode:(editMode: boolean) => void;
+interface DetailParams {
+  id: string;
 }
 
-export const ActivityDetails : React.FC<Iprops> = ({selectedActivity, setEditMode}) => {
-    return (
-      <Card fluid>
-        <Image src={`/assets/categoryImages/${selectedActivity.category}.jpg`} wrapped ui={false} />
-        <Card.Content>
-          <Card.Header>{selectedActivity.title}</Card.Header>
-          <Card.Meta>
-            <span>{selectedActivity.date}</span>
-          </Card.Meta>
-          <Card.Description>{selectedActivity.description}</Card.Description>
-        </Card.Content>
-        <Card.Content extra>
-          <Button.Group widths={2}>
-            <Button onClick={()=>{setEditMode(true)}} basic color="blue" content="Edit" />
-            <Button basic color="grey" content="Cancel" />
-          </Button.Group>
-        </Card.Content>
-      </Card>
-    );
-}
+const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({
+  match,
+  history,
+}) => {
+  const rootStore = useContext(RootStoreContext);
+  const {
+    selectedActivity: activity,
+    loadActivity,
+    loadingInitial,
+  } = rootStore.activityStore;
+
+  useEffect(() => {
+    loadActivity(match.params.id);
+  }, [loadActivity, match.params.id, history]);
+
+  if (loadingInitial || !activity)
+    return <LoadingComponent content="Loading activit..." />;
+
+  if (!activity) return <h2>Not found</h2>;
+
+  return (
+    <Grid>
+      <Grid.Column width={10}>
+        <ActivityDetailedHeader activity={activity} history={history}/>
+        <ActivityDetailedInfo activity={activity}/>
+        <ActivityDetailedChat/>
+      </Grid.Column>
+
+      <Grid.Column width={6}>
+        <ActivityDetailedSidebar attendees={activity.attendees}/>  
+      </Grid.Column>
+    </Grid>
+  );
+};
+
+export default observer(ActivityDetails);
