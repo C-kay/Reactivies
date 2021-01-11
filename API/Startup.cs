@@ -20,6 +20,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using AutoMapper;
+using API.SignalR;
+using System.Threading.Tasks;
 
 namespace API
 {
@@ -33,6 +35,26 @@ namespace API
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
+
+        public void ConfigureDevelopmentServices(IServiceCollection services)
+        {
+            services.AddDbContext<DataContext>(option =>{
+                option.UseLazyLoadingProxies();
+                option.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            ConfigureServices(services);
+        }
+
+        public void ConfigureProductionServices(IServiceCollection services)
+        {
+            services.AddDbContext<DataContext>(option =>{
+                option.UseLazyLoadingProxies();
+                option.UseSqlServer(Configuration.GetValue<string>("DefaultConnection"));
+            });
+
+            ConfigureServices(services);
+        }
         public void ConfigureServices(IServiceCollection services)
         {
 
@@ -50,20 +72,18 @@ namespace API
                 c.CustomSchemaIds(x => x.FullName);
             });
 
-            services.AddDbContext<DataContext>(option =>{
-                option.UseLazyLoadingProxies();
-                option.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
-            });
-
             services.AddCors(options =>{
                 options.AddPolicy("CorsPolicy", policy =>{
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000")
+                    .AllowCredentials();
                 });
             });
             
             services.AddMediatR(typeof(List.Handler).Assembly);
 
             services.AddAutoMapper(typeof(List.Handler));
+
+            services.AddSignalR();
 
             var builder = services.AddIdentityCore<AppUser>();
             var IdentityBuilder= new IdentityBuilder(builder.UserType, builder.Services);
@@ -89,6 +109,19 @@ namespace API
                         ValidateIssuer= false
                     };
 
+                    opt.Events = new JwtBearerEvents{
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if(!string.IsNullOrEmpty(accessToken) 
+                                && (path.StartsWithSegments("/chat")))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             services.AddScoped<IJwtGenerator, JwtGenerator>();
@@ -105,7 +138,27 @@ namespace API
                 //app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
+            }else{
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
             }
+
+            // app.UseXContentTypeOptions();
+            // app.UseReferrerPolicy(opt => opt.NoReferrer());
+            // app.UseXXssProtection(opt => opt.EnabledWithBlockMode());
+            // app.UseXfo(opt => opt.Deny());
+            // app.UseCspReportOnly(opt => opt
+            //         .BlockAllMixedContent()
+            //         .StyleSources(s => s.Self())
+            //         .FontSources(s => s.Self())
+            //         .FormActions(s => s.Self())
+            //         .FrameAncestors( s =>s.Self())
+            //         .ImageSources(s => s.Self())
+            //         .ScriptSources(s => s.Self())
+            //     );
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             app.UseRouting();
             //app.UseHttpsRedirection();
@@ -118,6 +171,8 @@ namespace API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chat");
+                endpoints.MapFallbackToController("Index", "Fallback");
             });
         }
             

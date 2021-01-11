@@ -6,6 +6,7 @@ import {history} from '../../index'
 import { toast } from 'react-toastify';
 import { RootStore } from './rootStore';
 import { createAttendee, setActivityProps } from '../util/util';
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 export default class ActivityStore {
 
@@ -23,6 +24,53 @@ export default class ActivityStore {
   @observable submitting = false;
   @observable target ='';
   @observable loading = false;
+  @observable.ref hubConnection: HubConnection | null = null;
+
+  @action createHubConnection = (activityId: string) => {
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl(process.env.REACT_APP_API_CHAT_URL!, {
+        accessTokenFactory: () => this.rootStore.commonStore.token!
+      })
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    this.hubConnection
+      .start()
+      .then(()=> console.log(this.hubConnection!.state))
+      .then(()=> {
+        console.log('Attempting to join group');
+        this.hubConnection!.invoke('AddToGroup', activityId);
+      })
+      .catch(error => console.log('Error establishing connection: ', error));
+
+    this.hubConnection.on('ReceiveComment', comment =>{
+      this.selectedActivity!.comments.push(comment);
+    });
+
+    this.hubConnection.on('Send', message =>{
+      toast.info(message);
+    })
+
+  }
+
+  @action stopConnection= ()=>{
+    this.hubConnection!.invoke('RemoveFromGroup', this.selectedActivity!.id)
+      .then(()=>{
+        this.hubConnection!.stop();
+      })
+      .then(()=> console.log('Connetion stopped'))
+      .catch((error)=> console.log(error));
+    
+  }
+
+  @action addComment= async (values: any)=>{
+    values.activityId = this.selectedActivity?.id;
+    try{
+      await this.hubConnection!.invoke('SendComment', values)
+    }catch(error){
+      console.log(error);
+    }
+  }
 
   @computed get activitiesByDate() {
     // return Array.from(this.activityRegistry.values()).sort(
@@ -37,7 +85,6 @@ export default class ActivityStore {
     );
     return Object.entries(sortedActivities.reduce((activities, activity) =>{
       const date = activity.date.toISOString().split('T')[0];
-      console.log("Testing things",date);
       activities[date] = activities[date] ? [...activities[date], activity] : [activity];
       return activities;
     }, {} as {[key:string]: IActivity[]}));
@@ -102,6 +149,7 @@ export default class ActivityStore {
       let attendees =[];
       attendees.push(attendee);
       activity.attendees= attendees;
+      activity.comments =[];
       activity.isHosting =true;
       this.selectedActivity = activity;
       this.submitting = false;
