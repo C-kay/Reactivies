@@ -7,6 +7,11 @@ namespace Domain
 {
     public class AppUser : IdentityUser
     {
+        public AppUser()
+        {
+            //Photos = new CollectionExtensions<Photo>();
+        }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [StringLength(50)]
         override

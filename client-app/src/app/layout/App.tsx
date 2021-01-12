@@ -10,7 +10,7 @@ import HomePage from '../../features/home/HomePage';
 import ActivityForm from '../../features/activities/dashboard/form/ActivityForm';
 import ActivityDetails from '../../features/activities/dashboard/details/ActivityDetails';
 import { NotFound } from './NotFound';
-import { LoginForm } from '../../features/user/LoginForm';
+import LoginForm from '../../features/user/LoginForm';
 import { RootStoreContext } from '../stores/rootStore';
 import { LoadingComponent } from './LoadingComponent';
 import ModalContainer from '../common/modals/ModalContainer';
