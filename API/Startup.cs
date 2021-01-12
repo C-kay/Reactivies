@@ -40,7 +40,7 @@ namespace API
         {
             services.AddDbContext<DataContext>(option =>{
                 option.UseLazyLoadingProxies();
-                option.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+                option.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
             ConfigureServices(services);
@@ -50,7 +50,8 @@ namespace API
         {
             services.AddDbContext<DataContext>(option =>{
                 option.UseLazyLoadingProxies();
-                option.UseSqlServer(Configuration.GetValue<string>("DefaultConnection"));
+                option.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                //option.UseSqlServer(Configuration.GetValue<string>("DefaultConnection"));
             });
 
             ConfigureServices(services);

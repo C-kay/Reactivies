@@ -43,32 +43,33 @@ namespace API
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+               
+                // .ConfigureAppConfiguration((context, config) =>
+                // {
+                //     if (context.HostingEnvironment.IsProduction())
+                //     {
+                //         var builtConfig = config.Build();
+                //         //var azCredentialOptions = new DefaultAzureCredentialOptions();
+                //         //azCredentialOptions.SharedTokenCacheUsername = "ceekay@ckobieyisigmail.onmicrosoft.com";
+                //         var secretClient = new SecretClient(new Uri(builtConfig["VaultName"]),
+                //                                                 new DefaultAzureCredential());
+                //         config.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+                //     }
+                // })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
                 });
                 //  .ConfigureAppConfiguration((context, config) =>
                 // {
-                //     if (context.HostingEnvironment.IsProduction())
-                //     {
-                //         var builtConfig = config.Build();
-                //         var secretClient = new SecretClient(new Uri($"https://{builtConfig["VaultName"]}.vault.azure.net/"),
-                //                                                 new DefaultAzureCredential());
-                //         config.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-
-
-                //     }
-                // });
-                // .ConfigureAppConfiguration((context, config) =>
-                // {
                 //     var builtConfig = config.Build();
                 //     var vaultName = builtConfig["VaultName"];
+                //     var azCredentialOptions = new DefaultAzureCredentialOptions();
+                //     azCredentialOptions.SharedTokenCacheUsername = "ceekay@ckobieyisigmail.onmicrosoft.com";
+                //     var credential = new DefaultAzureCredential(azCredentialOptions);
                 //     var keyVaultClient = new KeyVaultClient(
                 //         async (authority, resource, scope) =>
                 //         {
-                //             var azCredentialOptions = new DefaultAzureCredentialOptions();
-                //             azCredentialOptions.SharedTokenCacheUsername ="ceekay@ckobieyisigmail.onmicrosoft.com";
-                //             var credential = new DefaultAzureCredential(azCredentialOptions);
                 //             var token = await credential.GetTokenAsync(
                 //                 new Azure.Core.TokenRequestContext(
                 //                     new[] { "https://vault.azure.net/.default" }));
@@ -79,6 +80,8 @@ namespace API
                 //         keyVaultClient,
                 //         new DefaultKeyVaultSecretManager());
                 // });
+              
+                
                 
                 
     }
