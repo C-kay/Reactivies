@@ -126,6 +126,8 @@ namespace API
 
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IFacebookAccessor, FacebookAccessor>();
+            services.Configure<FacebookAppSettings>(Configuration.GetSection("Authentication:Facebook"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

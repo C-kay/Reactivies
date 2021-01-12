@@ -22,7 +22,7 @@ axios.interceptors.response.use(undefined, (error) => {
     toast.error("Network error - make sure Api is running!");
   }
 
-  const { status, data, config } = error.response;
+  const { status, data, config } = error.response!;
   if (status === 400) {
     history.push("/notfound");
   }
@@ -75,6 +75,8 @@ const User = {
     request.post("/user/login", user),
   register: (user: IUserFormValues): Promise<IUser> =>
     request.post("/user/register", user),
+  fbLogin: (accessToken: string) => 
+    request.post(`/user/facebook`, {accessToken}),
 };
 
 const activities = { Activities, User };
