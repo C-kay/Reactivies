@@ -3,6 +3,7 @@ import { IActivity } from "../models/activity";
 import { history } from "../../index";
 import { toast } from "react-toastify";
 import { IUser, IUserFormValues } from "../models/user";
+import { IPhoto, IProfile } from "../models/Profile";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
@@ -56,6 +57,13 @@ const request = {
   put: (url: string, body: {}) =>
     axios.get(url, body).then(responseBody),
   del: (url: string) => axios.delete(url).then(responseBody),
+  postForm: (url: string, file: Blob) =>{
+    let formData = new FormData();
+    formData.append('File', file);
+    return axios.post(url, formData, {
+      headers: {'Content-type' : 'multipart/form-data'}
+    }).then(responseBody)
+  }
 };
 
 const Activities = {
@@ -79,5 +87,12 @@ const User = {
     request.post(`/user/facebook`, {accessToken}),
 };
 
-const activities = { Activities, User };
+const Profiles ={
+  get: (username: string): Promise<IProfile> =>request.get(`/profiles/${username}`),
+  uploadPhoto: (photo: Blob): Promise<IPhoto> => request.postForm(`/photos`, photo),
+  setMainPhoto: (id: string) => request.post(`/post/${id}/setMain`, {}),
+  deletePhoto: (id: string) => request.del(`/photos/${id}`)
+};
+
+const activities = { Activities, User, Profiles};
 export default activities;

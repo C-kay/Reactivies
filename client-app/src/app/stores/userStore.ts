@@ -69,6 +69,7 @@ export default class UserStore {
       this.loading= false
       history.push("/activities");
     }catch(error){
+      this.loading= false;
       throw error;
     }
   }

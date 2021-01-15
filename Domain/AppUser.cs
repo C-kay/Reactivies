@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -12,11 +13,11 @@ namespace Domain
             //Photos = new CollectionExtensions<Photo>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [StringLength(50)]
-        override
-        public string Id { get; set; }
+    
+        //public string Id { get; set; }
         public string DisplayName { get; set; }
+        public string Bio { get; set; }
         public virtual ICollection<UserActivity> UserActivities {get; set;}
+        public virtual ICollection<Photo> Photo {get; set;}
     }
 }

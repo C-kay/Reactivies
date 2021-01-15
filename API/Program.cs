@@ -60,29 +60,6 @@ namespace API
                 {
                     webBuilder.UseStartup<Startup>();
                 });
-                //  .ConfigureAppConfiguration((context, config) =>
-                // {
-                //     var builtConfig = config.Build();
-                //     var vaultName = builtConfig["VaultName"];
-                //     var azCredentialOptions = new DefaultAzureCredentialOptions();
-                //     azCredentialOptions.SharedTokenCacheUsername = "ceekay@ckobieyisigmail.onmicrosoft.com";
-                //     var credential = new DefaultAzureCredential(azCredentialOptions);
-                //     var keyVaultClient = new KeyVaultClient(
-                //         async (authority, resource, scope) =>
-                //         {
-                //             var token = await credential.GetTokenAsync(
-                //                 new Azure.Core.TokenRequestContext(
-                //                     new[] { "https://vault.azure.net/.default" }));
-                //             return token.Token;
-                //         });
-                //     config.AddAzureKeyVault(
-                //         vaultName,
-                //         keyVaultClient,
-                //         new DefaultKeyVaultSecretManager());
-                // });
-              
-                
-                
                 
     }
 }
