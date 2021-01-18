@@ -1,10 +1,11 @@
 import { observer } from 'mobx-react-lite';
 import React, { useContext, useEffect, useState } from 'react'
-import { Button, Grid } from 'semantic-ui-react'
+import { Grid, Loader } from 'semantic-ui-react'
 import ActivityList from "./ActivityList";
-
+import InfiniteScroll from 'react-infinite-scroller';
 import { LoadingComponent } from '../../../app/layout/LoadingComponent';
 import { RootStoreContext } from '../../../app/stores/rootStore';
+import ActivityFilters from './ActivityFilters';
 
 
 const ActivityDashboard: React.FC = () => {
@@ -23,23 +24,25 @@ const ActivityDashboard: React.FC = () => {
     loadActivities();
   }, [loadActivities]);
   
-  if(loadingInitial) return <LoadingComponent content="Looading activities..."/>;
+  if(loadingInitial && page === 0) return <LoadingComponent content="Looading activities..."/>;
   return (
     <Grid>
       <Grid.Column width={10}>
-        <ActivityList/>
-        <Button
-          floated='right'
-          content='More...'
-          positive
-          disabled={totalPages === page + 1}
-          onClick={handleGetNext}
-          loading={loadingNext}
-        />
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={handleGetNext}
+          hasMore={!loadingNext && page + 1 < totalPages}
+        >
+          <ActivityList />
+        </InfiniteScroll>
       </Grid.Column>
 
       <Grid.Column width={6}>
-        Activity Filters
+        <ActivityFilters />
+      </Grid.Column>
+      
+      <Grid.Column width={10}>
+        <Loader active={loadingNext} />
       </Grid.Column>
     </Grid>
   );

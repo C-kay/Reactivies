@@ -45,11 +45,12 @@ axios.interceptors.response.use(undefined, (error) => {
 
 const responseBody = (response: AxiosResponse) => response.data;
 
-// const sleep = (ms: number) => (response: AxiosResponse) => {
-//   return new Promise<AxiosResponse>((resolve) =>
-//     setTimeout(() => resolve(response), ms)
-//   );
-// };
+const sleep = (ms: number) => (response: AxiosResponse) => {
+  return new Promise<AxiosResponse>((resolve) =>
+    setTimeout(() => resolve(response), ms)
+  );
+};
+
 const request = 
 {
   get: (url: string) => axios.get(url).then(responseBody),
@@ -69,10 +70,8 @@ const request =
 
 const Activities = 
 {
-  list: (limit?: number, page?: number): Promise<IActivitiesEnvelope> =>
-    request.get(
-      `/activities?limit=${limit}&offset=${page ? page * limit! : 0}`
-    ),
+  list: (params: URLSearchParams): Promise<IActivitiesEnvelope> =>
+    axios.get('/activities', {params: params}).then(sleep(1000)).then(responseBody),
   details: (id: string) => request.get(`/activities/${id}`),
   create: (activity: IActivity) => request.post(`/activities`, activity),
   update: (activity: IActivity) =>
@@ -93,15 +92,20 @@ const User =
     request.post(`/user/facebook`, {accessToken}),
 };
 
-const Profiles =
-{
-  get: (username: string): Promise<IProfile> =>request.get(`/profiles/${username}`),
-  uploadPhoto: (photo: Blob): Promise<IPhoto> => request.postForm(`/photos`, photo),
+const Profiles = {
+  get: (username: string): Promise<IProfile> =>
+    request.get(`/profiles/${username}`),
+  uploadPhoto: (photo: Blob): Promise<IPhoto> =>
+    request.postForm(`/photos`, photo),
   setMainPhoto: (id: string) => request.post(`/post/${id}/setMain`, {}),
   deletePhoto: (id: string) => request.del(`/photos/${id}`),
-  follow: (username: string) => request.post(`/profiles/${username}/follow`, {}),
+  follow: (username: string) =>
+    request.post(`/profiles/${username}/follow`, {}),
   unfollow: (username: string) => request.del(`/profiles/${username}/follow`),
-  listFollowings: (username: string, predicate: string) => request.get(`/profiles/${username}/follow?predicate=${predicate}`)
+  listFollowings: (username: string, predicate: string) =>
+    request.get(`/profiles/${username}/follow?predicate=${predicate}`),
+  listActivities: (username: string, predicate: string) =>
+    request.get(`/profiles/${username}/activities?predicate=${predicate}`),
 };
 
 const activities = { Activities, User, Profiles};

@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable, reaction } from "mobx";
 import { RootStore } from "./rootStore";
-import { IPhoto, IProfile } from "../models/Profile";
+import { IPhoto, IProfile, IUserActivity } from "../models/Profile";
 import agent from "../api/agent";
 import { toast } from "react-toastify";
 
@@ -30,6 +30,8 @@ export default class ProfileStore{
     @observable loading = false;
     @observable followings: IProfile[] = [];
     @observable activeTab: number = 0;
+    @observable userActivities: IUserActivity[] = [];
+    @observable loadingActivities : boolean = false;
 
     @computed get isCurrentUser(){
         if(this.rootStore.userStore.user && this.profile){
@@ -38,6 +40,20 @@ export default class ProfileStore{
             return false;
         }
     }
+
+    @action loadUserActivities = async (username: string, predicate?: string) =>{
+        this.loadingActivities = true;
+        try{
+            const activities = await agent.Profiles.listActivities(username, predicate!);
+            this.userActivities = activities;
+            this.loadingActivities = false;
+
+        }catch(error){
+            toast.error("Problem Loading activities");
+            this.loadingActivities = false
+        }
+    }
+
 
     @action setActiveTab = (activeIndex: number) =>{
         this.activeTab = activeIndex;
