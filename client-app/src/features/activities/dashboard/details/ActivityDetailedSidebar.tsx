@@ -15,7 +15,7 @@ const ActivityDetailedSidebar : React.FC<{attendees: IAttendee[]}> = ({attendees
           inverted
           color="teal"
         >
-          {attendees.length} People Going
+          {attendees.length > 1 ? attendees.length + " People" : "1 person" } Going
         </Segment>
         <Segment attached>
           <List relaxed divided>
@@ -37,7 +37,8 @@ const ActivityDetailedSidebar : React.FC<{attendees: IAttendee[]}> = ({attendees
                       {attendee.displayName}
                     </Link>
                   </Item.Header>
-                  <Item.Extra style={{ color: "orange" }}>Following</Item.Extra>
+                  {attendee.following &&
+                  <Item.Extra style={{ color: "orange" }}>Following</Item.Extra>}
                 </Item.Content>
               </Item>
             ))}

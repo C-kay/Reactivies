@@ -91,7 +91,10 @@ const Profiles ={
   get: (username: string): Promise<IProfile> =>request.get(`/profiles/${username}`),
   uploadPhoto: (photo: Blob): Promise<IPhoto> => request.postForm(`/photos`, photo),
   setMainPhoto: (id: string) => request.post(`/post/${id}/setMain`, {}),
-  deletePhoto: (id: string) => request.del(`/photos/${id}`)
+  deletePhoto: (id: string) => request.del(`/photos/${id}`),
+  follow: (username: string) => request.post(`/profiles/${username}/follow`, {}),
+  unfollow: (username: string) => request.del(`/profiles/${username}/follow`),
+  listFollowings: (username: string, predicate: string) => request.get(`/profiles/${username}/follow?predicate=${predicate}`)
 };
 
 const activities = { Activities, User, Profiles};

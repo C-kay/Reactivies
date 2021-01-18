@@ -23,6 +23,8 @@ using AutoMapper;
 using API.SignalR;
 using System.Threading.Tasks;
 using Infrastructure.Photos;
+using Application.Profiles;
+using System.Reflection;
 
 namespace API
 {
@@ -80,9 +82,10 @@ namespace API
                     .AllowCredentials();
                 });
             });
-            
-            services.AddMediatR(typeof(List.Handler).Assembly);
 
+            
+
+            services.AddMediatR(typeof(List.Handler).GetTypeInfo().Assembly);
             services.AddAutoMapper(typeof(List.Handler));
 
             services.AddSignalR();
@@ -128,8 +131,10 @@ namespace API
 
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IProfileReader, ProfileReader>();
             services.AddScoped<IFacebookAccessor, FacebookAccessor>();
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            
             services.Configure<FacebookAppSettings>(Configuration.GetSection("Authentication:Facebook"));
             services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
         }
@@ -166,12 +171,12 @@ namespace API
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
+            app.UseAuthentication();
+            
+
             app.UseRouting();
             //app.UseHttpsRedirection();
             app.UseCors("CorsPolicy");
-        
-            
-            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

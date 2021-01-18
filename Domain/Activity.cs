@@ -7,8 +7,7 @@ namespace Domain
 {
     public class Activity
     {
-        // [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        // [StringLength(50)]
+        
         public Guid Id {get; set;}
         public string Title{get; set;}
         public string Description {get; set;}
