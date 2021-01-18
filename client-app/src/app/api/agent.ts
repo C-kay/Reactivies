@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { IActivity } from "../models/activity";
+import { IActivitiesEnvelope, IActivity } from "../models/activity";
 import { history } from "../../index";
 import { toast } from "react-toastify";
 import { IUser, IUserFormValues } from "../models/user";
@@ -50,7 +50,8 @@ const responseBody = (response: AxiosResponse) => response.data;
 //     setTimeout(() => resolve(response), ms)
 //   );
 // };
-const request = {
+const request = 
+{
   get: (url: string) => axios.get(url).then(responseBody),
   post: (url: string, body: {}) =>
     axios.post(url, body).then(responseBody),
@@ -66,8 +67,12 @@ const request = {
   }
 };
 
-const Activities = {
-  list: (): Promise<IActivity[]> => request.get("/activities"),
+const Activities = 
+{
+  list: (limit?: number, page?: number): Promise<IActivitiesEnvelope> =>
+    request.get(
+      `/activities?limit=${limit}&offset=${page ? page * limit! : 0}`
+    ),
   details: (id: string) => request.get(`/activities/${id}`),
   create: (activity: IActivity) => request.post(`/activities`, activity),
   update: (activity: IActivity) =>
@@ -77,7 +82,8 @@ const Activities = {
   unattend: (id: string) => request.del(`/activities/${id}/attend`),
 };
 
-const User = {
+const User = 
+{
   current: (): Promise<IUser> => request.get("/user"),
   login: (user: IUserFormValues): Promise<IUser> =>
     request.post("/user/login", user),
@@ -87,7 +93,8 @@ const User = {
     request.post(`/user/facebook`, {accessToken}),
 };
 
-const Profiles ={
+const Profiles =
+{
   get: (username: string): Promise<IProfile> =>request.get(`/profiles/${username}`),
   uploadPhoto: (photo: Blob): Promise<IPhoto> => request.postForm(`/photos`, photo),
   setMainPhoto: (id: string) => request.post(`/post/${id}/setMain`, {}),
