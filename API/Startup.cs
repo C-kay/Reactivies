@@ -168,6 +168,21 @@ namespace API
             //         .ScriptSources(s => s.Self())
             //     );
 
+            app.UseXContentTypeOptions();
+            app.UseReferrerPolicy(opt => opt.NoReferrer());
+            app.UseXXssProtection(opt => opt.EnabledWithBlockMode());
+            app.UseXfo(opt => opt.Deny());
+            app.UseCsp(opt => opt
+                    .BlockAllMixedContent()
+                    .StyleSources(s => s.Self()
+                        .CustomSources("https://fonts.googleapis.com", "sha256-2aahydUs+he2AO0g7YZuG67RGvfE9VXGbycVgIwMnBI="))
+                    .FontSources(s => s.Self().CustomSources("https://fonts.gstatic.com", "data:"))
+                    .FormActions(s => s.Self())
+                    .FrameAncestors(s => s.Self())
+                    .ImageSources(s => s.Self().CustomSources("https://res.cloudinary.com", "blob:", "data:"))
+                    .ScriptSources(s => s.Self().CustomSources("https://connect.facebook.net/en_US/sdk.js", "sha256-HlN7A02rWeHJ+OpYzqiq8+mY/xWj22a50ch9nqZGr2A="))
+                );
+
             app.UseDefaultFiles();
             app.UseStaticFiles();
 

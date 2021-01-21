@@ -63,7 +63,6 @@ export default class UserStore {
       this.loading= true;
       const user = await agent.User.fbLogin(response.accessToken);
       this.user = user;
-      console.log(user);
       this.rootStore.commonStore.setToken(user.token);
       this.rootStore.modalStore.closeModal();
       this.loading= false

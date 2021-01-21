@@ -5,3 +5,4 @@ obj
 appsettings.js
 *.db
 wwwroot
+stuff.json

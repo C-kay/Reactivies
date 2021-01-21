@@ -20,7 +20,6 @@ const ActivityList : React.FC= () => {
 
             <Item.Group divided>
               {activities.map((activity) => {
-                console.log(activity);
                 return <ActivityListItem activity={activity} />;
               })}
             </Item.Group>
